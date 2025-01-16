@@ -104,20 +104,7 @@
                 "description": "The typed data which was request. The version corresponds to the `version` in the paramaters of the method.",
                 "schema": {
                     "title": "Typed data",
-                    "oneOf": [
-                        {
-                            "title": "Typed data v1",
-                            "$ref": "#/components/schemas/TYPED_DATA_V1"
-                        },
-                        {
-                            "title": "Typed data v2",
-                            "$ref": "#/components/schemas/TYPED_DATA_V2"
-                        },
-                        {
-                            "title": "Typed data v3",
-                            "$ref": "#/components/schemas/TYPED_DATA_V3"
-                        }
-                    ]
+                    "$ref": "#/components/schemas/TYPED_DATA"
                 }
             }
         },
