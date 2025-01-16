@@ -73,7 +73,7 @@
                 },
                 {
                     "name": "gas_token_address",
-                    "description": "The address of the account that wishes to use the paymaster service.",
+                    "description": "The address of the token contract",
                     "required": true,
                     "schema": {
                         "title": "Gas token",
@@ -101,7 +101,7 @@
             ],
             "result": {
                 "name": "result",
-                "description": "The typed data which was request. The version corresponds to the `version` in the paramaters of the method.",
+                "description": "The typed data which was requested. The version corresponds to the `version` in the paramaters of the method.",
                 "schema": {
                     "title": "Typed data",
                     "$ref": "#/components/schemas/TYPED_DATA"
@@ -132,7 +132,7 @@
                 },
                 {
                     "name": "signature",
-                    "description": "The address of the account that wishes to use the paymaster service.",
+                    "description": "The signature of the user on the typed data",
                     "required": true,
                     "schema": {
                         "title": "Signature",
