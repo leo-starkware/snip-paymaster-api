@@ -60,12 +60,12 @@
                 },
                 {
                     "name": "calls",
-                    "description": "The sequence of calls that the user wishes to perform.",
+                    "description": "The sequence of calls that the user wishes to perform",
                     "required": true,
                     "schema": {
                         "title": "Calls",
                         "type": "array",
-                        "description": "The sequence of calls that the user wishes to perform.",
+                        "description": "The sequence of calls that the user wishes to perform",
                         "items": {
                             "$ref": "#/components/schemas/CALL"
                         }
@@ -82,7 +82,7 @@
                 },
                 {
                     "name": "max_token_amount",
-                    "description": "The maximum amount of tokens (denominated in its smallest unit) that the user allows for payment.",
+                    "description": "The maximum amount of tokens (denominated in its smallest unit) that the user allows for payment",
                     "required": true,
                     "schema": {
                         "title": "Amount",
@@ -101,7 +101,7 @@
             ],
             "result": {
                 "name": "result",
-                "description": "The typed data which was requested. The version corresponds to the `version` in the paramaters of the method.",
+                "description": "The typed data which was requested. The version corresponds to the `version` in the paramaters of the method",
                 "schema": {
                     "title": "Typed data",
                     "$ref": "#/components/schemas/TYPED_DATA"
@@ -193,8 +193,8 @@
             "u256": {
                 "type": "string",
                 "title": "u256",
-                "description": "64 bit integers, represented by hex string of length at most 64",
-                "pattern": "^0x(0|[a-fA-F1-9]{1}[a-fA-F0-9]{0,31})$"
+                "description": "256 bit integers, represented by hex string of length at most 64",
+                "pattern": "^0x(0|[a-fA-F1-9]{1}[a-fA-F0-9]{0,63})$"
             },
             "CALL": {
                 "title": "Call",
@@ -212,7 +212,7 @@
                     "calldata": {
                         "type": "array",
                         "title": "Calldata",
-                        "description": "Inputs for the entry point function.",
+                        "description": "Inputs for the entry point function",
                         "items": {
                             "$ref": "#/components/schemas/FELT"
                         }
