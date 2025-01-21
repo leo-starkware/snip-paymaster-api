@@ -116,8 +116,6 @@ This specification may be breaking for existing paymaster services: more precise
 
 ## Security Considerations
 
-TODO: to mention or not to mention attacks on paymasters.
-
 ## Copyright
 
 Copyright and related rights waived via [MIT](../LICENSE).

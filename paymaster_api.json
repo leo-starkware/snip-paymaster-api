@@ -631,23 +631,23 @@
         },
         "errors": {
             "INVALID_SENDER_ADDRESS": {
-                "code": 111,
+                "code": 150,
                 "message": "An error occurred (INVALID_SENDER_ADDRESS)"
             },
             "INVALID_TOKEN_ADDRESS": {
-                "code": 112,
+                "code": 151,
                 "message": "An error occurred (INVALID_TOKEN_ADDRESS)"
             },
             "INVALID_REQUEST_PAYLOAD": {
-                "code": 113,
+                "code": 152,
                 "message": "An error occurred (INVALID_REQUEST_PAYLOAD)"
             },
             "INVALID_SIGNATURE": {
-                "code": 114,
+                "code": 153,
                 "message": "An error occurred (INVALID_SIGNATURE)"
             },
             "MAX_AMOUNT_TOO_LOW": {
-                "code": 115,
+                "code": 154,
                 "message": "An error occurred (MAX_AMOUNT_TOO_LOW)"
             },
             "UNKNOWN_ERROR": {
