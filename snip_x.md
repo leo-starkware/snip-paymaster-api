@@ -1,9 +1,9 @@
 ---
-snip: TODO
+snip:
 title: Applicative Paymaster API Standard
-description: TODO
-author: TODO
-discussions-to: 
+description:
+author:
+discussions-to:
 status: Review
 type: Standards Track
 category: Core
@@ -29,9 +29,11 @@ The full JSON-RPC specification is found in `paymaster_api.json`. The specificat
 3. The user signs on the typed object and sends it (along with the signature) to the paymaster service for execution.
 4. The paymaster service finally sends a transaction onchain from its relayer account, containing the signed outside execution payload.
 
+Below we list constant JSON objects that correspond to properties of some objects in the JSON RPC specification. These are the same as the ones that appear in SNIP-9 (outside execution) for its different versions, but we list them here as well for completeness.
+
 ### Version 1
 
-The properties `types` and `domain` of the object `OUTSIDE_EXECUTION_TYPED_DATA_V1` MUST be set as follows:
+The properties `types`, `domain` and `primaryType` of the object `OUTSIDE_EXECUTION_TYPED_DATA_V1` MUST be set as follows:
 
 ```json
 "types": {
@@ -60,7 +62,8 @@ The properties `types` and `domain` of the object `OUTSIDE_EXECUTION_TYPED_DATA_
     "version": "1",
     "chainId": "0x534e5f4d41494e"
     
-}
+},
+"primaryType": "OutsideExecution"
 
 ```
 
@@ -68,7 +71,7 @@ The `"chainId"` property of the `"domain"` object is set to the chainId of Stark
 
 ### Version 2
 
-The properties `types` and `domain` of the object `OUTSIDE_EXECUTION_TYPED_DATA_V2` MUST be set as follows:
+The properties `types`, `domain` and `primaryType` object `OUTSIDE_EXECUTION_TYPED_DATA_V2` MUST be set as follows:
 ```json
 "types": {
     "StarknetDomain": [
@@ -94,7 +97,8 @@ The properties `types` and `domain` of the object `OUTSIDE_EXECUTION_TYPED_DATA_
     "name": "Account.execute_from_outside",
     "version": "2",
     "chainId": "0x534e5f4d41494e"
-}
+},
+"primaryType": "OutsideExecution"
 ```
 The field `"revision"` of the `"domain` object above is omitted: it should follow the revision of SNIP-12 that is being used (either the integer `1` or the shortstring `"2"`).
 
@@ -102,7 +106,7 @@ The `"chainId"` property of the `"domain"` object is set to the chainId of Stark
 
 ### Version 3
 
-TODO: Add version 3 of outside execution which is paymaster "safe". This should be coupled with a modification of SNIP-9 as well.
+TODO: Add version 3 of outside execution which is safer for paymaster. This should be coupled with a modification of SNIP-9 as well.
 
 ## Rationale
 
