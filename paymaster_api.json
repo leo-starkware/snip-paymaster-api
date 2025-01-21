@@ -103,7 +103,7 @@
             ],
             "result": {
                 "name": "result",
-                "description": "The typed data which was requested. The version corresponds to the `version` in the parameters of the method",
+                "description": "The typed data which was requested. The version in the `domain` property corresponds to the `version` in the request",
                 "required": true,
                 "schema": {
                     "title": "Typed data",
@@ -274,7 +274,35 @@
                     }
                 ]
             },
-            "OUTSIDE_EXECUTION_TYPED_DATA_V1": {},
+            "OUTSIDE_EXECUTION_TYPED_DATA_V1": {
+                "type": "object",
+                "properties": {
+                    "types": {
+                        "type": "object",
+                        "additionalProperties": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/components/schemas/STARKNET_TYPE"
+                            }
+                        }
+                    },
+                    "primaryType": {
+                        "type": "string"
+                    },
+                    "domain": {
+                        "$ref": "#/components/schemas/STARKNET_DOMAIN"
+                    },
+                    "message": {
+                        "$ref": "#/components/schemas/OUTSIDE_EXECUTION_MESSAGE_V1"
+                    }
+                },
+                "required": [
+                    "types",
+                    "primaryType",
+                    "domain",
+                    "message"
+                ]
+            },
             "OUTSIDE_EXECUTION_TYPED_DATA_V2": {
                 "type": "object",
                 "properties": {
@@ -476,8 +504,8 @@
                         "$ref": "#/components/schemas/FELT"
                     },
                     "calls_len": {
-                        "title": "Calls",
-                        "description": "The array of calls returned by the paymaster service",
+                        "title": "Calls length",
+                        "description": "Length of the array of calls returned by the paymaster service",
                         "$ref": "#/components/schemas/FELT"
                     },
                     "calls": {
