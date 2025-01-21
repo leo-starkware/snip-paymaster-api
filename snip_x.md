@@ -29,6 +29,43 @@ The full JSON-RPC specification is found in `paymaster_api.json`. The specificat
 3. The user signs on the typed object and sends it (along with the signature) to the paymaster service for execution.
 4. The paymaster service finally sends a transaction onchain from its relayer account, containing the signed outside execution payload.
 
+### Version 1
+
+The properties `types` and `domain` of the object `OUTSIDE_EXECUTION_TYPED_DATA_V1` MUST be set as follows:
+
+```json
+"types": {
+  "StarkNetDomain": [
+    { "name": "name", "type": "felt" },
+    { "name": "version", "type": "felt" },
+    { "name": "chainId", "type": "felt" },
+  ],
+  "OutsideExecution": [
+    { "name": "caller", "type": "felt" },
+    { "name": "nonce", "type": "felt" },
+    { "name": "execute_after", "type": "felt" },
+    { "name": "execute_before", "type": "felt" },
+    { "name": "calls_len", "type": "felt" },
+    { "name": "calls", "type": "OutsideCall*" },
+  ],
+  "OutsideCall": [
+    { "name": "to", "type": "felt" },
+    { "name": "selector", "type": "felt" },
+    { "name": "calldata_len", "type": "felt" },
+    { "name": "calldata", "type": "felt*" },
+  ],
+},
+"domain": {
+    "name": "Account.execute_from_outside",
+    "version": "1",
+    "chainId": "0x534e5f4d41494e"
+    
+}
+
+```
+
+The `"chainId"` property of the `"domain"` object is set to the chainId of Starknet mainnet. For Starknet testnet, the corresponding chainId should be used.
+
 ### Version 2
 
 The properties `types` and `domain` of the object `OUTSIDE_EXECUTION_TYPED_DATA_V2` MUST be set as follows:
@@ -65,7 +102,7 @@ The `"chainId"` property of the `"domain"` object is set to the chainId of Stark
 
 ### Version 3
 
-TODO: Add version 3 of outside exeuction which is paymaster "safe". This should be coupled with a modification of SNIP-9 as well.
+TODO: Add version 3 of outside execution which is paymaster "safe". This should be coupled with a modification of SNIP-9 as well.
 
 ## Rationale
 

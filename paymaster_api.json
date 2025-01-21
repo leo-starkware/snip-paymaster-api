@@ -39,10 +39,15 @@
                 "description": "If the address is compatible with some version of outside execution, return the highest compatible version. Else, return zero",
                 "required": true,
                 "schema": {
-                    "title": "Higest compatible version of outside execution, or zero if not supported",
-                    "type": "number"
+                    "title": "Highest compatible version of outside execution, or zero if not supported",
+                    "$ref": "#/components/schemas/NUMERIC"
                 }
-            }
+            },
+            "errors": [
+                {
+                    "$ref": "#/components/errors/INVALID_SENDER_ADDRESS"
+                }
+            ]
         },
         {
             "name": "paymaster_buildTypedData",
@@ -71,7 +76,7 @@
                 },
                 {
                     "name": "gas_token_address",
-                    "description": "The address of the token contract that user wishes use to pay fees",
+                    "description": "The address of the token contract that the user wishes use to pay fees",
                     "required": true,
                     "schema": {
                         "title": "Gas token",
@@ -80,7 +85,7 @@
                 },
                 {
                     "name": "max_token_amount",
-                    "description": "The maximum amount of tokens (denominated in its smallest unit) that the user allows for fee payment",
+                    "description": "The maximum amount of gas token (denominated in its smallest unit) that the user allows for fee payment",
                     "required": true,
                     "schema": {
                         "title": "Amount",
@@ -91,18 +96,37 @@
                     "name": "version",
                     "description": "The version of the outside execution revision (SNIP-9) that is being used",
                     "required": true,
-                    "type": "number"
+                    "schema": {
+                        "$ref": "#/components/schemas/NUMERIC"
+                    }
                 }
             ],
             "result": {
                 "name": "result",
-                "description": "The typed data which was requested. The version corresponds to the `version` in the paramaters of the method",
+                "description": "The typed data which was requested. The version corresponds to the `version` in the parameters of the method",
                 "required": true,
                 "schema": {
                     "title": "Typed data",
                     "$ref": "#/components/schemas/OUTSIDE_EXECUTION_TYPED_DATA"
                 }
-            }
+            },
+            "errors": [
+                {
+                    "$ref": "#/components/errors/INVALID_SENDER_ADDRESS"
+                },
+                {
+                    "$ref": "#/components/errors/INVALID_TOKEN_ADDRESS"
+                },
+                {
+                    "$ref": "#/components/errors/INVALID_REQUEST_PAYLOAD"
+                },
+                {
+                    "$ref": "#/components/errors/MAX_AMOUNT_TOO_LOW"
+                },
+                {
+                    "$ref": "#/components/errors/UNKNOWN_ERROR"
+                }
+            ]
         },
         {
             "name": "paymaster_execute",
@@ -123,7 +147,7 @@
                     "required": true,
                     "schema": {
                         "title": "Typed data",
-                        "$ref": "#/components/schemas/TYPED_DATA"
+                        "$ref": "#/components/schemas/OUTSIDE_EXECUTION_TYPED_DATA"
                     }
                 },
                 {
@@ -144,7 +168,21 @@
                     "title": "Transaction hash",
                     "$ref": "#/components/schemas/TXN_HASH"
                 }
-            }
+            },
+            "errors": [
+                {
+                    "$ref": "#/components/errors/INVALID_SENDER_ADDRESS"
+                },
+                {
+                    "$ref": "#/components/errors/INVALID_REQUEST_PAYLOAD"
+                },
+                {
+                    "$ref": "#/components/errors/INVALID_SIGNATURE"
+                },
+                {
+                    "$ref": "#/components/errors/UNKNOWN_ERROR"
+                }
+            ]
         },
         {
             "name": "paymaster_getSupportedTokensAndPrices",
@@ -174,15 +212,21 @@
             },
             "FELT": {
                 "title": "Field element",
-                "description": "A field element. represented by at most 63 hex digits",
+                "description": "A field element. represented by a hex string of length at most 63",
                 "type": "string",
                 "pattern": "^0x(0|[a-fA-F1-9]{1}[a-fA-F0-9]{0,62})$"
             },
             "u256": {
                 "title": "u256",
-                "description": "256 bit integers, represented by hex string of length at most 64",
+                "description": "256 bit unsigned integers, represented by a hex string of length at most 64",
                 "type": "string",
                 "pattern": "^0x(0|[a-fA-F1-9]{1}[a-fA-F0-9]{0,63})$"
+            },
+            "NUMERIC": {
+                "title": "Numeric string",
+                "description": "A string representing an unsigned integer",
+                "type": "string",
+                "pattern": "^(0|[1-9]{1}[0-9]*)$"
             },
             "CALL": {
                 "title": "Call",
@@ -231,7 +275,6 @@
                 ]
             },
             "OUTSIDE_EXECUTION_TYPED_DATA_V1": {},
-            "OUTSIDE_EXECUTION_TYPED_DATA_V3": {},
             "OUTSIDE_EXECUTION_TYPED_DATA_V2": {
                 "type": "object",
                 "properties": {
@@ -261,6 +304,8 @@
                     "message"
                 ]
             },
+            "OUTSIDE_EXECUTION_TYPED_DATA_V3": {},
+
             "STARKNET_MERKLE_TYPE": {
                 "title": "Starknet Merkle Type",
                 "type": "object",
@@ -382,31 +427,76 @@
             "STARKNET_TYPE": {
                 "title": "Starknet Type",
                 "description": "A single type, as part of a struct. The `type` field can be any of the EIP-712 supported types",
-                "schema": {
-                    "anyOf": [
-                        {
-                            "type": "object",
-                            "properties": {
-                                "name": {
-                                    "type": "string"
-                                },
-                                "type": {
-                                    "type": "string"
-                                }
+                "anyOf": [
+                    {
+                        "type": "object",
+                        "properties": {
+                            "name": {
+                                "type": "string"
                             },
-                            "required": [
-                                "name",
-                                "type"
-                            ]
+                            "type": {
+                                "type": "string"
+                            }
                         },
-                        {
-                            "$ref": "#/components/schemas/STARKNET_MERKLE_TYPE"
-                        },
-                        {
-                            "$ref": "#/components/schemas/STARKNET_ENUM_TYPE"
+                        "required": [
+                            "name",
+                            "type"
+                        ]
+                    },
+                    {
+                        "$ref": "#/components/schemas/STARKNET_MERKLE_TYPE"
+                    },
+                    {
+                        "$ref": "#/components/schemas/STARKNET_ENUM_TYPE"
+                    }
+                ]
+            },
+            "OUTSIDE_EXECUTION_MESSAGE_V1": {
+                "name": "message",
+                "type": "object",
+                "properties": {
+                    "caller": {
+                        "title": "Caller address",
+                        "description": "The account address of the user",
+                        "$ref": "#/components/schemas/FELT"
+                    },
+                    "nonce": {
+                        "title": "Nonce",
+                        "description": "The nonce used in the outside execution protocol",
+                        "$ref": "#/components/schemas/FELT"
+                    },
+                    "execute_after": {
+                        "title": "Minimum timestamp",
+                        "description": "Timestamp after which the outside execution is valid and possible",
+                        "$ref": "#/components/schemas/FELT"
+                    },
+                    "execute_before": {
+                        "title": "Maximum timestamp",
+                        "description": "Timestamp before which the outside execution is valid and possible",
+                        "$ref": "#/components/schemas/FELT"
+                    },
+                    "calls_len": {
+                        "title": "Calls",
+                        "description": "The array of calls returned by the paymaster service",
+                        "$ref": "#/components/schemas/FELT"
+                    },
+                    "calls": {
+                        "title": "Calls",
+                        "description": "The array of calls returned by the paymaster service",
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/OUTSIDE_CALL_V1"
                         }
-                    ]
-                }
+                    }
+                },
+                "required": [
+                    "caller",
+                    "nonce",
+                    "execute_after",
+                    "execute_before",
+                    "calls_len",
+                    "calls"
+                ]
             },
             "OUTSIDE_EXECUTION_MESSAGE_V2": {
                 "name": "message",
@@ -437,7 +527,7 @@
                         "description": "The array of calls returned by the paymaster service",
                         "type": "array",
                         "items": {
-                            "$ref": "#/components/schemas/OUTSIDE_EXECUTION_CALL"
+                            "$ref": "#/components/schemas/OUTSIDE_CALL_V2"
                         }
                     }
                 },
@@ -450,8 +540,39 @@
                 ]
             },
             "OUTSIDE_EXECUTION_MESSAGE_V3": {},
-            "OUTSIDE_EXECUTION_MESSAGE_V1": {},
-            "OUTSIDE_EXECUTION_CALL": {
+            "OUTSIDE_CALL_V1": {
+                "title": "Call",
+                "description": "The object that defines an invocation of a function in a contract",
+                "type": "object",
+                "properties": {
+                    "to": {
+                        "title": "Contract address",
+                        "$ref": "#/components/schemas/ADDRESS"
+                    },
+                    "selector": {
+                        "title": "Entry point selector",
+                        "$ref": "#/components/schemas/FELT"
+                    },
+                    "calldata_len": {
+                        "title": "Entry point selector",
+                        "$ref": "#/components/schemas/FELT"
+                    },
+                    "calldata": {
+                        "type": "array",
+                        "title": "Calldata",
+                        "description": "Inputs for the entry point function",
+                        "items": {
+                            "$ref": "#/components/schemas/FELT"
+                        }
+                    }
+                },
+                "required": [
+                    "To",
+                    "Selector",
+                    "Calldata"
+                ]
+            },
+            "OUTSIDE_CALL_V2": {
                 "title": "Call",
                 "description": "The object that defines an invocation of a function in a contract",
                 "type": "object",
@@ -478,6 +599,33 @@
                     "Selector",
                     "Calldata"
                 ]
+            }
+        },
+        "errors": {
+            "INVALID_SENDER_ADDRESS": {
+                "code": 111,
+                "message": "An error occurred (INVALID_SENDER_ADDRESS)"
+            },
+            "INVALID_TOKEN_ADDRESS": {
+                "code": 112,
+                "message": "An error occurred (INVALID_TOKEN_ADDRESS)"
+            },
+            "INVALID_REQUEST_PAYLOAD": {
+                "code": 113,
+                "message": "An error occurred (INVALID_REQUEST_PAYLOAD)"
+            },
+            "INVALID_SIGNATURE": {
+                "code": 114,
+                "message": "An error occurred (INVALID_SIGNATURE)"
+            },
+            "MAX_AMOUNT_TOO_LOW": {
+                "code": 115,
+                "message": "An error occurred (MAX_AMOUNT_TOO_LOW)"
+            },
+            "UNKNOWN_ERROR": {
+                "code": 163,
+                "message": "An error occurred (UNKNOWN_ERROR)",
+                "data": "string"
             }
         }
     }
