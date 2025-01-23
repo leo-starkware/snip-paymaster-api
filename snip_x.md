@@ -61,6 +61,7 @@ The properties `types`, `domain` and `primaryType` of the object `OUTSIDE_EXECUT
     "name": "Account.execute_from_outside",
     "version": "1",
     "chainId": "0x534e5f4d41494e"
+   // it would depend on the chainId (0x534e5f4d41494e, 0x534e5f5345504f4c4941, or maybe a new one)
     
 },
 "primaryType": "OutsideExecution"
@@ -96,7 +97,10 @@ The properties `types`, `domain` and `primaryType` object `OUTSIDE_EXECUTION_TYP
 "domain": {
     "name": "Account.execute_from_outside",
     "version": "2",
-    "chainId": "0x534e5f4d41494e"
+    "chainId": "0x534e5f4d41494e" // it would depend on the chainId (0x534e5f4d41494e, 0x534e5f5345504f4c4941, or maybe a new one)
+     // Here we also have the "revision" field
+     "revision": "1"
+
 },
 "primaryType": "OutsideExecution"
 ```

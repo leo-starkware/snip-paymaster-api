@@ -12,7 +12,7 @@
             "summary": "Returns the status of the paymaster service",
             "params": [],
             "result": {
-                "name": "result",
+                "name": "result", // Maybe we could rename it to "up" or change it to "status" where the value is "UP" or "DOWN"
                 "description": "If the paymaster service is correctly functioning, return true. Else, return false",
                 "required": true,
                 "schema": {
@@ -25,7 +25,7 @@
             "summary": "Given an account address, returns the highest compatible version of SNIP-9 that the account implements",
             "params": [
                 {
-                    "name": "sender_address",
+                    "name": "sender_address", // Maybe we could rename it to "user_address". "sender_address" could refer to the typed data's "caller_address"
                     "description": "The address of the account that wishes to use the paymaster service",
                     "required": true,
                     "schema": {
@@ -35,7 +35,12 @@
                 }
             ],
             "result": {
-                "name": "result",
+                // I don't know if we should put it here. But for now, we return gasConsumedOverhead and dataGasConsumedOverhead fields here to avoid an additional request
+                // The estimateFee doesn't include the "validate" part. The cost of the "validate" part is often negligible, but for some accounts
+                // like Braavos with MFA, it is significant. So in this case, we return the gasConsumed and dataGasConsumed for the "validate" part.
+                // Because we are not able to estimate this part, we had to hardcode those values on our backend. So we are might miss some cases. This far from ideal
+                // I don't know how we could make this better here
+                "name": "result", // Maybe we could rename it to "version"
                 "description": "If the address is compatible with some version of outside execution, return the highest compatible version. Else, return zero",
                 "required": true,
                 "schema": {
@@ -43,6 +48,11 @@
                     "$ref": "#/components/schemas/NUMERIC"
                 }
             },
+                /*
+                 Here we need to manage several errors:
+                  - The account is deployed but the is not compatible with any version
+                  - The account is not deployed
+                 */
             "errors": [
                 {
                     "$ref": "#/components/errors/INVALID_SENDER_ADDRESS"
@@ -53,8 +63,11 @@
             "name": "paymaster_buildTypedData",
             "summary": "Receives the array of calls that the user wishes to make, along with token data and resource bounds. Returns a typed object for the user to sign",
             "params": [
+                // The OutsideExecution object includes Caller, Nonce, Execute After, Execute Before, and Calls
+                // Caller, Nonce should be defined by the paymaster
+                // We don't allow yet to set the Execute After and Execute Before in our api but it might be useful here
                 {
-                    "name": "sender_address",
+                    "name": "sender_address", // Maybe rename this
                     "description": "The address of the account that wishes to use the paymaster service",
                     "required": true,
                     "schema": {
@@ -74,6 +87,9 @@
                         }
                     }
                 },
+                // On our side, the gas_token_address and max_token_amount are optional. This allows users to avoid paying gas fees.
+                // When an API key header is provided, gas_token_address and max_token_amount are null or empty, and the API key is
+                // linked to a third party that has remaining STRK/ETH credits, we execute the transaction without charging the user gas fees, instead charging the third party.
                 {
                     "name": "gas_token_address",
                     "description": "The address of the token contract that the user wishes use to pay fees",
@@ -93,6 +109,11 @@
                     }
                 },
                 {
+                    // On our side, this value is only required when the account isn't deployed. Our backend checks the latest compatible SNIP-9 version.
+                    // However, it might be better to always request this value so developers don't need to handle special cases when the account isn't deployed.
+                    // Additionally, here you request the version instead of the account class hash. This simplifies backend implementation since it doesn't need to store
+                    // the <class_hash, version> mapping. However, this part now relies on the client, and I don't know how they will retrieve this information.
+                    // Perhaps we could modify the deploymentData to return the SNIP-9 version.
                     "name": "version",
                     "description": "The version of the outside execution revision (SNIP-9) that is being used",
                     "required": true,
@@ -121,6 +142,8 @@
                     "$ref": "#/components/errors/INVALID_REQUEST_PAYLOAD"
                 },
                 {
+                    // Do you think that the backend should already simulate the calls to know if the max_token_amount is too low?
+                    // I think this part could remain on the execute part
                     "$ref": "#/components/errors/MAX_AMOUNT_TOO_LOW"
                 },
                 {
@@ -133,7 +156,7 @@
             "summary": "Sends the signed typed data to the paymaster service for execution",
             "params": [
                 {
-                    "name": "sender_address",
+                    "name": "sender_address", // Maybe rename
                     "description": "The address of the account that wishes to use the paymaster service",
                     "required": true,
                     "schema": {
@@ -159,6 +182,7 @@
                         "$ref": "#/components/schemas/SIGNATURE"
                     }
                 }
+                // If we want to deploy the user's account before execute the execute from outside call, we need to add the deploymentData here
             ],
             "result": {
                 "name": "transaction_hash",
@@ -176,6 +200,7 @@
                 {
                     "$ref": "#/components/errors/INVALID_REQUEST_PAYLOAD"
                 },
+                // Maybe add "max gas token amount if too low"
                 {
                     "$ref": "#/components/errors/INVALID_SIGNATURE"
                 },
