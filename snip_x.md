@@ -22,12 +22,15 @@ The motivation of this SNIP is to make it easier for the Starknet ecosystem to i
 ## Specification
 
 The full JSON-RPC specification is found in `paymaster_api.json`. The specification is modeled around the following flow:
-1. A user submits to the paymaster service a list of calls that they wish to make, along with the token they wish to pay fees with and fee bounds.
+1. A user submits to the paymaster service a list of calls that they wish to make, along with the token they wish to pay fees with.
 2. The paymaster service responds with a typed object (in the sense of SNIP-12) that wraps the calls submitted by the user and which is ready for signature. The purpose of the typed object is to:
     1. Wrap the user calls into a format compatible with outside execution (SNIP-9).
     2. Potentially add additional calls which are necessary for the fee accounting logic of the paymaster service.
 3. The user signs on the typed object and sends it (along with the signature) to the paymaster service for execution.
 4. The paymaster service finally sends a transaction onchain from its relayer account, containing the signed outside execution payload.
+
+
+
 
 Below we list constant JSON objects that correspond to properties of some objects in the JSON RPC specification. These are the same as the ones that appear in SNIP-9 (outside execution) for its different versions, but we list them here as well for completeness.
 

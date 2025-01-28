@@ -1,14 +1,14 @@
 {
     "openrpc": "1.0.0-rc1",
     "info": {
-        "version": "0.0.1-rc1",
+        "version": "0.1.0-rc1",
         "title": "Applicative Paymaster API",
         "license": {}
     },
     "servers": [],
     "methods": [
         {
-            "name": "paymaster_getStatus",
+            "name": "paymaster_isAvailable",
             "summary": "Returns the status of the paymaster service",
             "params": [],
             "result": {
@@ -21,45 +21,73 @@
             }
         },
         {
-            "name": "paymaster_isCompatible",
+            "name": "paymaster_supportedVersion",
             "summary": "Given an account address, returns the highest compatible version of SNIP-9 that the account implements",
             "params": [
                 {
-                    "name": "sender_address",
-                    "description": "The address of the account that wishes to use the paymaster service",
+                    "name": "user_account",
+                    "description": "The address or class hash of the account that wishes to use the paymaster service",
                     "required": true,
                     "schema": {
-                        "title": "Address",
-                        "$ref": "#/components/schemas/ADDRESS"
+                        "oneOf": [
+                            {
+                                "type": "object",
+                                "properties": {
+                                    "address": {
+                                        "$ref": "#/components/schemas/ADDRESS"
+                                    }
+                                },
+                                "required": [
+                                    "address"
+                                ]
+                            },
+                            {
+                                "type": "object",
+                                "properties": {
+                                    "class_hash": {
+                                        "$ref": "#/components/schemas/CLASS_HASH"
+                                    }
+                                },
+                                "required": [
+                                    "class_hash"
+                                ]
+                            }
+                        ]
                     }
                 }
             ],
             "result": {
                 "name": "result",
-                "description": "If the address is compatible with some version of outside execution, return the highest compatible version. Else, return zero",
+                "description": "If the address is compatible with some version of outside execution, return the highest compatible version. Return an error if incompatible",
                 "required": true,
                 "schema": {
-                    "title": "Highest compatible version of outside execution, or zero if not supported",
+                    "title": "Highest compatible version of outside execution",
                     "$ref": "#/components/schemas/NUMERIC"
                 }
             },
             "errors": [
                 {
-                    "$ref": "#/components/errors/INVALID_SENDER_ADDRESS"
+                    "$ref": "#/components/errors/INVALID_ADDRESS"
+                },
+                {
+                    "$ref": "#/components/errors/INVALID_CLASS_HASH"
+                },
+                {
+                    "$ref": "#/components/errors/CLASS_HASH_NOT_SUPPORTED"
                 }
             ]
         },
         {
             "name": "paymaster_buildTypedData",
-            "summary": "Receives the array of calls that the user wishes to make, along with token data and resource bounds. Returns a typed object for the user to sign",
+            "summary": "Receives the array of calls that the user wishes to make, along with token data. Returns a typed object for the user to sign and, optionally, data about token amount and rate",
             "params": [
                 {
-                    "name": "sender_address",
-                    "description": "The address of the account that wishes to use the paymaster service",
+                    "name": "user_account_info",
+                    "description": "Information about the user account: either the address of the account if deployed, or a `deploymentData` object",
                     "required": true,
                     "schema": {
-                        "title": "Address",
-                        "$ref": "#/components/schemas/ADDRESS"
+                        "title": "",
+                        "$ref": "#/components/schemas/USER_ACCOUNT_INFO"
                     }
                 },
                 {
@@ -75,27 +103,27 @@
                     }
                 },
                 {
-                    "name": "gas_token_address",
-                    "description": "The address of the token contract that the user wishes use to pay fees",
-                    "required": true,
+                    "name": "time_bounds",
+                    "description": "Bounds on valid timestamps",
+                    "required": false,
                     "schema": {
-                        "title": "Gas token",
+                        "title": "Time bounds",
+                        "$ref": "#/components/schemas/TIME_BOUNDS"
+                    }
+                },
+                {
+                    "name": "token_address",
+                    "description": "The address of the token contract that the user wishes use to pay fees with. If not present then the paymaster can allow other flows, such as sponsoring",
+                    "required": false,
+                    "schema": {
+                        "title": "Token address",
                         "$ref": "#/components/schemas/ADDRESS"
                     }
                 },
                 {
-                    "name": "max_token_amount",
-                    "description": "The maximum amount of gas token (denominated in its smallest unit) that the user allows for fee payment",
-                    "required": true,
-                    "schema": {
-                        "title": "Amount",
-                        "$ref": "#/components/schemas/u256"
-                    }
-                },
-                {
                     "name": "version",
-                    "description": "The version of the outside execution revision (SNIP-9) that is being used",
-                    "required": true,
+                    "description": "The version of the outside execution revision (SNIP-9) that is being used. If not present, the paymaster will choose any compatible revision",
+                    "required": false,
                     "schema": {
                         "$ref": "#/components/schemas/NUMERIC"
                     }
@@ -103,28 +131,63 @@
             ],
             "result": {
                 "name": "result",
-                "description": "The typed data which was requested. The version in the `domain` property corresponds to the `version` in the request",
-                "required": true,
+                "description": "The typed data that the user needs to sign, together with information about the fee",
                 "schema": {
-                    "title": "Typed data",
-                    "$ref": "#/components/schemas/OUTSIDE_EXECUTION_TYPED_DATA"
+                    "title": "Typed data and token info",
+                    "type": "object",
+                    "properties": {
+                        "typed_data": {
+                            "title": "Typed data",
+                            "$ref": "#/components/schemas/OUTSIDE_EXECUTION_TYPED_DATA"
+                        },
+                        "token_amount_and_price": {
+                            "title": "Max token amount and price. This object should not be returned if the corresponding request didn't specify a token address",
+                            "type": "object",
+                            "properties": {
+                                "max_amount": {
+                                    "title": "The estimated max token amount that the user is required to allow for the paymaster transaction. This is only an informative field: its semantics is not enforced in the subsequent flow. This information is extractable from the typed data object",
+                                    "$ref": "#/components/schemas/u256"
+                                },
+                                "price_in_strk": {
+                                    "title": "The exchange rate between the chosen token and STRK that is used in the estimation",
+                                    "$ref": "#/components/schemas/u256"
+                                }
+                            },
+                            "required": [
+                                "max_amount",
+                                "price_in_strk"
+                            ]
+                        }
+                    },
+                    "required": [
+                        "typed_data"
+                    ]
                 }
             },
             "errors": [
                 {
-                    "$ref": "#/components/errors/INVALID_SENDER_ADDRESS"
+                    "$ref": "#/components/errors/INVALID_ADDRESS"
                 },
                 {
-                    "$ref": "#/components/errors/INVALID_TOKEN_ADDRESS"
+                    "$ref": "#/components/errors/CLASS_HASH_NOT_SUPPORTED"
+                },
+                {
+                    "$ref": "#/components/errors/INVALID_DEPLOYMENT_DATA"
+                },
+                {
+                    "$ref": "#/components/errors/TOKEN_NOT_SUPPORTED"
                 },
                 {
                     "$ref": "#/components/errors/INVALID_REQUEST_PAYLOAD"
                 },
                 {
-                    "$ref": "#/components/errors/MAX_AMOUNT_TOO_LOW"
+                    "$ref": "#/components/errors/INVALID_TIME_BOUNDS"
                 },
                 {
                     "$ref": "#/components/errors/UNKNOWN_ERROR"
+                },
+                {
+                    "$ref": "#/components/errors/TRANSACTION_EXECUTION_ERROR"
                 }
             ]
         },
@@ -133,12 +196,12 @@
             "summary": "Sends the signed typed data to the paymaster service for execution",
             "params": [
                 {
-                    "name": "sender_address",
-                    "description": "The address of the account that wishes to use the paymaster service",
+                    "name": "user_account_info",
+                    "description": "Information about the user account: either the address if the account is deployed, or a `deploymentData` object",
                     "required": true,
                     "schema": {
-                        "title": "Address",
-                        "$ref": "#/components/schemas/ADDRESS"
+                        "title": "User account info",
+                        "$ref": "#/components/schemas/USER_ACCOUNT_INFO"
                     }
                 },
                 {
@@ -161,17 +224,31 @@
                 }
             ],
             "result": {
-                "name": "transaction_hash",
-                "description": "The hash of the requested transaction",
+                "name": "result",
+                "description": "The hash of the transaction broadcasted by the paymaster",
                 "required": true,
                 "schema": {
-                    "title": "Transaction hash",
-                    "$ref": "#/components/schemas/TXN_HASH"
+                    "type": "object",
+                    "properties": {
+                        "transaction_hash": {
+                            "title": "Transaction hash",
+                            "$ref": "#/components/schemas/TXN_HASH"
+                        }
+                    },
+                    "required": [
+                        "transaction_hash"
+                    ]
                 }
             },
             "errors": [
                 {
-                    "$ref": "#/components/errors/INVALID_SENDER_ADDRESS"
+                    "$ref": "#/components/errors/INVALID_ADDRESS"
+                },
+                {
+                    "$ref": "#/components/errors/CLASS_HASH_NOT_SUPPORTED"
+                },
+                {
+                    "$ref": "#/components/errors/INVALID_DEPLOYMENT_DATA"
                 },
                 {
                     "$ref": "#/components/errors/INVALID_REQUEST_PAYLOAD"
@@ -181,6 +258,12 @@
                 },
                 {
                     "$ref": "#/components/errors/UNKNOWN_ERROR"
+                },
+                {
+                    "$ref": "#/components/errors/MAX_AMOUNT_TOO_LOW"
+                },
+                {
+                    "$ref": "#/components/errors/TRANSACTION_EXECUTION_ERROR"
                 }
             ]
         },
@@ -208,6 +291,11 @@
             "ADDRESS": {
                 "title": "Address",
                 "description": "A contract address on Starknet",
+                "$ref": "#/components/schemas/FELT"
+            },
+            "CLASS_HASH": {
+                "title": "Class hash",
+                "description": "Class hash of a class on Starknet",
                 "$ref": "#/components/schemas/FELT"
             },
             "FELT": {
@@ -333,7 +421,6 @@
                 ]
             },
             "OUTSIDE_EXECUTION_TYPED_DATA_V3": {},
-
             "STARKNET_MERKLE_TYPE": {
                 "title": "Starknet Merkle Type",
                 "type": "object",
@@ -411,6 +498,32 @@
                     "decimals",
                     "price_in_strk"
                 ]
+            },
+            "TIME_BOUNDS": {
+                "title": "Time bounds",
+                "description": "Object containing timestamps corresponding to `Execute After` and `Execute Before`",
+                "type": "object",
+                "properties": {
+                    "execute_after": {
+                        "title": "Execute After",
+                        "description": "A lower bound after which an outside call is valid",
+                        "$ref": "#/components/schemas/TIMESTAMP"
+                    },
+                    "execute_before": {
+                        "title": "Execute Before",
+                        "description": "An upper bound before which an outside call is valid",
+                        "$ref": "#/components/schemas/TIMESTAMP"
+                    }
+                },
+                "required": [
+                    "execute_after",
+                    "execute_before"
+                ]
+            },
+            "TIMESTAMP": {
+                "title": "Timestamp",
+                "description": "UNIX time",
+                "$ref": "#/components/schemas/NUMERIC"
             },
             "STARKNET_DOMAIN": {
                 "title": "Starknet Domain",
@@ -627,16 +740,84 @@
                     "Selector",
                     "Calldata"
                 ]
+            },
+            "ACCOUNT_DEPLOYMENT_DATA": {
+                "title": "Account Deployment Data",
+                "description": "Data required to deploy an account at an address",
+                "type": "object",
+                "properties": {
+                    "address": {
+                        "title": "Address",
+                        "description": "The expected address to be deployed, used to double check",
+                        "$ref": "#/components/schemas/ADDRESS"
+                    },
+                    "class_hash": {
+                        "title": "Class hash",
+                        "description": "The hash of the deployed contract's class",
+                        "$ref": "#/components/schemas/FELT"
+                    },
+                    "salt": {
+                        "title": "Class hash",
+                        "description": "The hash of the deployed contract's class",
+                        "$ref": "#/components/schemas/FELT"
+                    },
+                    "calldata": {
+                        "type": "array",
+                        "description": "The parameters passed to the constructor",
+                        "title": "Constructor calldata",
+                        "items": {
+                            "$ref": "#/components/schemas/FELT"
+                        }
+                    },
+                    "sigdata": {
+                        "title": "Signature Data",
+                        "type": "array",
+                        "description": "Optional array of felts to be added to the signature",
+                        "items": {
+                            "$ref": "#/components/schemas/FELT"
+                        }
+                    },
+                    "version": {
+                        "title": "Contract Version",
+                        "description": "The Cairo version of the contract 0 or 1",
+                        "type": "integer",
+                        "enum": [
+                            0,
+                            1
+                        ]
+                    }
+                },
+                "required": [
+                    "address",
+                    "class_hash",
+                    "salt",
+                    "calldata",
+                    "version"
+                ]
+            },
+            "USER_ACCOUNT_INFO": {
+                "title": "User account info",
+                "description": "Either an address with a deployed account or deployement data needed in order to deploy an account",
+                "oneOf": [
+                    {
+                        "title": "User address",
+                        "$ref": "#/components/schemas/ADDRESS"
+                    },
+                    {
+                        "title": "Account Deployment Data",
+                        "$ref": "#/components/schemas/ACCOUNT_DEPLOYMENT_DATA"
+                    }
+                ]
             }
         },
         "errors": {
-            "INVALID_SENDER_ADDRESS": {
+            "INVALID_ADDRESS": {
                 "code": 150,
-                "message": "An error occurred (INVALID_SENDER_ADDRESS)"
+                "message": "An error occurred (INVALID_ADDRESS)"
             },
-            "INVALID_TOKEN_ADDRESS": {
+            "TOKEN_NOT_SUPPORTED": {
                 "code": 151,
-                "message": "An error occurred (INVALID_TOKEN_ADDRESS)"
+                "message": "An error occurred (TOKEN_NOT_SUPPORTED)"
             },
             "INVALID_REQUEST_PAYLOAD": {
                 "code": 152,
@@ -649,6 +830,38 @@
             "MAX_AMOUNT_TOO_LOW": {
                 "code": 154,
                 "message": "An error occurred (MAX_AMOUNT_TOO_LOW)"
+            },
+            "CLASS_HASH_NOT_SUPPORTED": {
+                "code": 155,
+                "message": "An error occurred (CLASS_HASH_NOT_SUPPORTED)"
+            },
+            "TRANSACTION_EXECUTION_ERROR": {
+                "code": 156,
+                "message": "An error occurred (TRANSACTION_EXECUTION_ERROR)",
+                "data": {
+                    "type": "object",
+                    "description": "More data about the execution failure",
+                    "properties": {
+                        "revert_error": {
+                            "title": "revert error",
+                            "description": "A string encoding the execution trace up to the point of failure",
+                            "type": "string"
+                        }
+                    },
+                    "required": "revert_error"
+                }
+            },
+            "INVALID_TIME_BOUNDS": {
+                "code": 157,
+                "message": "An error occurred (INVALID_TIME_BOUNDS)"
+            },
+            "INVALID_DEPLOYMENT_DATA": {
+                "code": 158,
+                "message": "An error occurred (INVALID_DEPLOYMENT_DATA)"
+            },
+            "INVALID_CLASS_HASH": {
+                "code": 159,
+                "message": "An error occurred (INVALID_ADDRESS)"
             },
             "UNKNOWN_ERROR": {
                 "code": 163,
