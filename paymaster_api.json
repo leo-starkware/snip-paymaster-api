@@ -420,7 +420,35 @@
                     "message"
                 ]
             },
-            "OUTSIDE_EXECUTION_TYPED_DATA_V3": {},
+            "OUTSIDE_EXECUTION_TYPED_DATA_V3": {
+                "type": "object",
+                "properties": {
+                    "types": {
+                        "type": "object",
+                        "additionalProperties": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/components/schemas/STARKNET_TYPE"
+                            }
+                        }
+                    },
+                    "primaryType": {
+                        "type": "string"
+                    },
+                    "domain": {
+                        "$ref": "#/components/schemas/STARKNET_DOMAIN"
+                    },
+                    "message": {
+                        "$ref": "#/components/schemas/OUTSIDE_EXECUTION_MESSAGE_V3"
+                    }
+                },
+                "required": [
+                    "types",
+                    "primaryType",
+                    "domain",
+                    "message"
+                ]
+            },
             "STARKNET_MERKLE_TYPE": {
                 "title": "Starknet Merkle Type",
                 "type": "object",
@@ -680,7 +708,100 @@
                     "Calls"
                 ]
             },
-            "OUTSIDE_EXECUTION_MESSAGE_V3": {},
+            "OUTSIDE_EXECUTION_MESSAGE_V3": {
+                "name": "message",
+                "type": "object",
+                "properties": {
+                    "Caller": {
+                        "title": "Caller address",
+                        "description": "The account address of the user",
+                        "$ref": "#/components/schemas/FELT"
+                    },
+                    "Nonce": {
+                        "title": "Nonce",
+                        "description": "The nonce used in the outside execution protocol",
+                        "$ref": "#/components/schemas/FELT"
+                    },
+                    "Execute After": {
+                        "title": "Minimum timestamp",
+                        "description": "Timestamp after which the outside execution is valid and possible",
+                        "$ref": "#/components/schemas/FELT"
+                    },
+                    "Execute Before": {
+                        "title": "Maximum timestamp",
+                        "description": "Timestamp before which the outside execution is valid and possible",
+                        "$ref": "#/components/schemas/FELT"
+                    },
+                    "Calls": {
+                        "title": "Calls",
+                        "description": "The array of calls returned by the paymaster service",
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/OUTSIDE_CALL_V2"
+                        }
+                    },
+                    "Fee": {
+                        "title": "Fee",
+                        "description": "The field which describes whether or not a fee transfer is required in the outside execution",
+                        "$ref": "#/components/schemas/FEE_MODE"
+                    }
+
+                }
+            },
+            "FEE_MODE": {
+                "title": "Fee mode",
+                "description": "",
+                "oneOf": [
+                    {
+                        "title": "Pay fee",
+                        "type": "object",
+                        "properties": {
+                            "Pay Fee": {
+                                "title": "Fee payment info",
+                                "$ref": "#/components/schemas/FEE_PAYMENT_INFO"
+                            }
+                        }
+                    },
+                    {
+                        "title": "No fee",
+                        "type": "object",
+                        "properties": {
+                            "No Fee": {}
+                        }
+                    }
+                ]
+            },
+            "FEE_PAYMENT_INFO": {
+                "title": "Fee payment info",
+                "type": "object",
+                "properties": {
+                    "Fee Amount": {
+                        "title": "Fee amount",
+                        "$ref": "#/components/schemas/u256_AS_FELTS"
+                    },
+                    "Fee Receiver": {
+                        "title": "Receiver",
+                        "$ref": "#/components/schemas/ADDRESS"
+                    }
+                }
+            },
+            "u256_AS_FELTS": {
+                "title": "u256 as felts",
+                "description": "A u256 integer represented as two felts `low` and `high`",
+                "type": "object",
+                "properties": {
+                    "low": {
+                        "title": "Low",
+                        "description": "The 128 least significant bits of the u256",
+                        "$ref": "#/components/schemas/FELT"
+                    },
+                    "high": {
+                        "title": "High",
+                        "description": "The 128 most significant bits of the u256",
+                        "$ref": "#/components/schemas/FELT"
+                    }
+                }
+            },
             "OUTSIDE_CALL_V1": {
                 "title": "Call",
                 "description": "The object that defines an invocation of a function in a contract",
