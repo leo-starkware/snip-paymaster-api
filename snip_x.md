@@ -30,8 +30,6 @@ The full JSON-RPC specification is found in `paymaster_api.json`. The specificat
 4. The paymaster service finally sends a transaction onchain from its relayer account, containing the signed outside execution payload.
 
 
-
-
 Below we list constant JSON objects that correspond to properties of some objects in the JSON RPC specification. These are the same as the ones that appear in SNIP-9 (outside execution) for its different versions, but we list them here as well for completeness.
 
 ### Version 1
@@ -77,25 +75,25 @@ The `"chainId"` property of the `"domain"` object is set to the chainId of Stark
 The properties `types`, `domain` and `primaryType` object `OUTSIDE_EXECUTION_TYPED_DATA_V2` MUST be set as follows:
 ```json
 "types": {
-    "StarknetDomain": [
-        { "name": "name", "type": "shortstring" }, 
-        { "name": "version", "type": "shortstring" },
-        { "name": "chainId", "type": "shortstring" },
-        { "name": "revision", "type": "shortstring" }
-    ],
-    "OutsideExecution": [
-        { "name": "Caller", "type": "ContractAddress" },
-        { "name": "Nonce", "type": "felt" },
-        { "name": "Execute After", "type": "u128" },
-        { "name": "Execute Before", "type": "u128" },
-        { "name": "Calls", "type": "Call*" }
-      ],
-      "Call": [
-        { "name": "To", "type": "ContractAddress" },
-        { "name": "Selector", "type": "selector" },
-        { "name": "Calldata", "type": "felt*" }
-      ]
-}
+  "StarknetDomain": [
+      { "name": "name", "type": "shortstring" }, 
+      { "name": "version", "type": "shortstring" },
+      { "name": "chainId", "type": "shortstring" },
+      { "name": "revision", "type": "shortstring" }
+  ],
+  "OutsideExecution": [
+      { "name": "Caller", "type": "ContractAddress" },
+      { "name": "Nonce", "type": "felt" },
+      { "name": "Execute After", "type": "u128" },
+      { "name": "Execute Before", "type": "u128" },
+      { "name": "Calls", "type": "Call*" }
+  ],
+  "Call": [
+    { "name": "To", "type": "ContractAddress" },
+    { "name": "Selector", "type": "selector" },
+    { "name": "Calldata", "type": "felt*" }
+  ]
+},
 "domain": {
     "name": "Account.execute_from_outside",
     "version": "2",
@@ -107,9 +105,47 @@ The field `"revision"` of the `"domain` object above is omitted: it should follo
 
 The `"chainId"` property of the `"domain"` object is set to the chainId of Starknet mainnet. For Starknet testnet, the corresponding chainId should be used.
 
-### Version 3
+### Version 3-rc
 
-TODO: Add version 3 of outside execution which is safer for paymaster. This should be coupled with a modification of SNIP-9 as well.
+```json
+"types": {
+  "StarknetDomain": [
+        { "name": "name", "type": "shortstring" }, 
+        { "name": "version", "type": "shortstring" },
+        { "name": "chainId", "type": "shortstring" },
+        { "name": "revision", "type": "shortstring" }
+    ],
+  "OutsideExecution": [
+      { "name": "Caller", "type": "ContractAddress" },
+      { "name": "Nonce", "type": "felt" },
+      { "name": "Execute After", "type": "u128" },
+      { "name": "Execute Before", "type": "u128" },
+      { "name": "Calls", "type": "Call*" },
+      { "name": "Fee", "type": "Fee Mode" }
+    ],
+    "Call": [
+    { "name": "To", "type": "ContractAddress" },
+    { "name": "Selector", "type": "selector" },
+    { "name": "Calldata", "type": "felt*" }
+    ],
+    "Fee Mode": [
+      { "name": "No Fee", "type": "()" },
+      { "name": "Pay Fee", "type": "(FeeTransfer)" }
+    ],
+    "Fee Transfer": [
+      { "name": "Fee Amount", "type": "TokenAmount" },
+      { "name": "Fee Receiver", "type": "ContractAddress" }
+    ]
+},
+"domain": {
+    "name": "Account.execute_from_outside",
+    "version": "3",
+    "chainId": "0x534e5f4d41494e"
+},
+```
+The field `"revision"` of the `"domain` object above is omitted: it should follow the revision of SNIP-12 that is being used (either the integer `1` or the shortstring `"2"`).
+
+The `"chainId"` property of the `"domain"` object is set to the chainId of Starknet mainnet. For Starknet testnet, the corresponding chainId should be used.
 
 ## Rationale
 
