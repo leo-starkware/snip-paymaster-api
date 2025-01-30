@@ -86,7 +86,7 @@
                     "description": "Information about the user account: either the address of the account if deployed, or a `deploymentData` object",
                     "required": true,
                     "schema": {
-                        "title": "",
+                        "title": "User account info",
                         "$ref": "#/components/schemas/USER_ACCOUNT_INFO"
                     }
                 },
@@ -141,15 +141,18 @@
                             "$ref": "#/components/schemas/OUTSIDE_EXECUTION_TYPED_DATA"
                         },
                         "token_amount_and_price": {
-                            "title": "Max token amount and price. This object should not be returned if the corresponding request didn't specify a token address",
+                            "title": "Max token amount and price",
+                            "description": "This object should not be returned if the corresponding request didn't specify a token address",
                             "type": "object",
                             "properties": {
                                 "max_amount": {
-                                    "title": "The estimated max token amount that the user is required to allow for the paymaster transaction. This is only an informative field: its semantics is not enforced in the subsequent flow. This information is extractable from the typed data object",
+                                    "title": "Max amount",
+                                    "description": "The estimated max token amount that the user is required to allow for the paymaster transaction. This is only an informative field: its semantics is not enforced in the subsequent flow. This information is extractable from the typed data object",
                                     "$ref": "#/components/schemas/u256"
                                 },
                                 "price_in_strk": {
-                                    "title": "The exchange rate between the chosen token and STRK that is used in the estimation",
+                                    "title": "Price in STRK",
+                                    "description": "The exchange rate between the chosen token and STRK that is used in the estimation",
                                     "$ref": "#/components/schemas/u256"
                                 }
                             },
@@ -513,11 +516,13 @@
                         "$ref": "#/components/schemas/ADDRESS"
                     },
                     "decimals": {
-                        "title": "The number of decimals of the token",
+                        "title": "Decimals",
+                        "description": "The number of decimals of the token",
                         "type": "number"
                     },
                     "price_in_strk": {
-                        "title": "Price in STRK (in FRI units)",
+                        "title": "Price in STRK",
+                        "description": "Price in STRK (in FRI units)",
                         "$ref": "#/components/schemas/u256"
                     }
                 },

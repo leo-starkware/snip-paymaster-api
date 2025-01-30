@@ -142,7 +142,9 @@ The `"chainId"` property of the `"domain"` object is set to the chainId of Stark
     "version": "3",
     "chainId": "0x534e5f4d41494e"
 },
+"primaryType": "OutsideExecution"
 ```
+
 The field `"revision"` of the `"domain` object above is omitted: it should follow the revision of SNIP-12 that is being used (either the integer `1` or the shortstring `"2"`).
 
 The `"chainId"` property of the `"domain"` object is set to the chainId of Starknet mainnet. For Starknet testnet, the corresponding chainId should be used.
