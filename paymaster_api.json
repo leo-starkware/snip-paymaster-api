@@ -82,12 +82,21 @@
             "summary": "Receives the array of calls that the user wishes to make, along with token data. Returns a typed object for the user to sign and, optionally, data about token amount and rate",
             "params": [
                 {
-                    "name": "user_account_info",
-                    "description": "Information about the user account: either the address of the account if deployed, or a `deploymentData` object",
+                    "name": "user_address",
+                    "description": "The address of the user account",
                     "required": true,
                     "schema": {
-                        "title": "User account info",
-                        "$ref": "#/components/schemas/USER_ACCOUNT_INFO"
+                        "title": "Address",
+                        "$ref": "#/components/schemas/ADDRESS"
+                    }
+                },
+                {
+                    "name": "deployment_data",
+                    "description": "The necessary data to deploy an account through the universal deployer contract",
+                    "required": false,
+                    "schema": {
+                        "title": "Deployement data",
+                        "$ref": "#/components/schemas/ACCOUNT_DEPLOYMENT_DATA"
                     }
                 },
                 {
@@ -112,7 +121,7 @@
                     }
                 },
                 {
-                    "name": "token_address",
+                    "name": "gas_token_address",
                     "description": "The address of the token contract that the user wishes use to pay fees with. If not present then the paymaster can allow other flows, such as sponsoring",
                     "required": false,
                     "schema": {
@@ -199,12 +208,21 @@
             "summary": "Sends the signed typed data to the paymaster service for execution",
             "params": [
                 {
-                    "name": "user_account_info",
-                    "description": "Information about the user account: either the address if the account is deployed, or a `deploymentData` object",
+                    "name": "user_address",
+                    "description": "The address of the user account",
                     "required": true,
                     "schema": {
-                        "title": "User account info",
-                        "$ref": "#/components/schemas/USER_ACCOUNT_INFO"
+                        "title": "Address",
+                        "$ref": "#/components/schemas/ADDRESS"
+                    }
+                },
+                {
+                    "name": "deployment_data",
+                    "description": "The necessary data to deploy an account through the universal deployer contract",
+                    "required": false,
+                    "schema": {
+                        "title": "Deployement data",
+                        "$ref": "#/components/schemas/ACCOUNT_DEPLOYMENT_DATA"
                     }
                 },
                 {
@@ -919,20 +937,6 @@
                     "salt",
                     "calldata",
                     "version"
-                ]
-            },
-            "USER_ACCOUNT_INFO": {
-                "title": "User account info",
-                "description": "Either an address with a deployed account or deployement data needed in order to deploy an account",
-                "oneOf": [
-                    {
-                        "title": "User address",
-                        "$ref": "#/components/schemas/ADDRESS"
-                    },
-                    {
-                        "title": "Account Deployment Data",
-                        "$ref": "#/components/schemas/ACCOUNT_DEPLOYMENT_DATA"
-                    }
                 ]
             }
         },
